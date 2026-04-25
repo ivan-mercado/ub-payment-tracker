@@ -81,7 +81,7 @@ const AddBillForm = ({ students, onAdd, onClose }) => {
   );
 };
 
-const BillRow = ({ bill, students, onMarkPaid, onSendEmail }) => {
+const BillRow = ({ bill, students, onMarkPaid, onSendEmail, emailStatus }) => {
   const student = students.find((s) => s.id === bill.studentId);
   const overdueDays =
     bill.status === "overdue" ? getDaysOverdue(bill.dueDate) : 0;
@@ -107,13 +107,13 @@ const BillRow = ({ bill, students, onMarkPaid, onSendEmail }) => {
           </button>
         )}
 
-        <button
-          className="btn btn--sm btn--ghost"
-          onClick={() => onSendEmail(bill)}
-          style={{ marginLeft: "8px" }}
-        >
-          Send Email
-        </button>
+        <button onClick={() => onSendEmail(bill)} className="send-email-btn">
+  {emailStatus[bill.id] === "sent"
+    ? "Sent"
+    : emailStatus[bill.id] === "error"
+    ? "Error"
+    : "Send Email"}
+</button>
       </td>
     </tr>
   );
@@ -124,10 +124,15 @@ const BillTracker = ({ bills, students, onMarkPaid, onAddBill }) => {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [sending, setSending] = useState(false);
+  const [emailStatus, setEmailStatus] = useState({});
 
   const handleSendEmail = async (bill) => {
     const student = students.find((s) => s.id === bill.studentId);
-    if (!student) return alert("Student not found");
+
+    if (!student) {
+      setEmailStatus((prev) => ({ ...prev, [bill.id]: "error" }));
+      return;
+    }
 
     try {
       setSending(true);
@@ -146,14 +151,12 @@ const BillTracker = ({ bills, students, onMarkPaid, onAddBill }) => {
         }),
       });
 
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error || "Failed to send email");
-
-      alert("Email sent successfully!");
-    } catch (err) {
-      console.error(err);
-      alert("Error sending email");
+      setEmailStatus((prev) => ({
+        ...prev,
+        [bill.id]: res.ok ? "sent" : "error",
+      }));
+    } catch {
+      setEmailStatus((prev) => ({ ...prev, [bill.id]: "error" }));
     } finally {
       setSending(false);
     }
@@ -237,6 +240,7 @@ const BillTracker = ({ bills, students, onMarkPaid, onAddBill }) => {
                   students={students}
                   onMarkPaid={onMarkPaid}
                   onSendEmail={handleSendEmail}
+                  emailStatus={emailStatus}
                 />
               ))
             )}

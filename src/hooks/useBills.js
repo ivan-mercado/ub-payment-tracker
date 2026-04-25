@@ -4,12 +4,30 @@ import { getBillStatus } from "../utils/helpers";
 import { sendEmail } from "../utils/api";
 
 export const useBills = (students = []) => {
-  const [bills, setBills] = useState(
-    INITIAL_BILLS.map((b) => ({ ...b, status: getBillStatus(b) }))
-  );
+  const BILLS_KEY = "ub_bills";
+  const EMAIL_LOG_KEY = "ub_email_log";
 
-  const [emailLog, setEmailLog] = useState([]);
+  const [bills, setBills] = useState(() => {
+    const saved = localStorage.getItem(BILLS_KEY);
+    return saved
+      ? JSON.parse(saved)
+      : INITIAL_BILLS.map((b) => ({ ...b, status: getBillStatus(b) }));
+  });
+
+  const [emailLog, setEmailLog] = useState(() => {
+    const saved = localStorage.getItem(EMAIL_LOG_KEY);
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    localStorage.setItem(BILLS_KEY, JSON.stringify(bills));
+  }, [bills]);
+
+  useEffect(() => {
+    localStorage.setItem(EMAIL_LOG_KEY, JSON.stringify(emailLog));
+  }, [emailLog]);
 
   const addNotification = useCallback((message, type = "info") => {
     const id = Date.now();
@@ -20,7 +38,6 @@ export const useBills = (students = []) => {
     }, 4000);
   }, []);
 
-  // ✅ FIXED: async handled OUTSIDE setBills
   useEffect(() => {
     const interval = setInterval(() => {
       setBills((prev) => {
@@ -52,7 +69,6 @@ export const useBills = (students = []) => {
           }
         });
 
-        // ✅ return updated bills synchronously
         return prev.map((bill) => ({
           ...bill,
           status: getBillStatus(bill),
@@ -63,7 +79,6 @@ export const useBills = (students = []) => {
     return () => clearInterval(interval);
   }, [students, addNotification]);
 
-  // ✅ FIXED: correct async + syntax
   const markAsPaid = useCallback(
     async (billId) => {
       let updatedBill = null;
@@ -85,7 +100,6 @@ export const useBills = (students = []) => {
         })
       );
 
-      // ✅ run async AFTER state update
       if (student && updatedBill) {
         await sendEmail("paid", student, updatedBill);
 
