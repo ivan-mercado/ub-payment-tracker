@@ -8,30 +8,39 @@ import {
   doc,
 } from "firebase/firestore";
 
-
-const STORAGE_KEY = "ub_students";
-
 export function useStudents() {
-  const [students, setStudents] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [students, setStudents] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(students));
-  }, [students]);
+    const fetchStudents = async () => {
+      const snapshot = await getDocs(collection(db, "students"));
 
-  const addStudent = (student) => {
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setStudents(data);
+    };
+
+    fetchStudents();
+  }, []);
+
+  const addStudent = async (student) => {
+    const docRef = await addDoc(collection(db, "students"), student);
+
     setStudents((prev) => [
       ...prev,
       {
-        id: Date.now().toString(),
+        id: docRef.id,
         ...student,
       },
     ]);
   };
 
-  const deleteStudent = (id) => {
+  const deleteStudent = async (id) => {
+    await deleteDoc(doc(db, "students", id));
+
     setStudents((prev) => prev.filter((student) => student.id !== id));
   };
 

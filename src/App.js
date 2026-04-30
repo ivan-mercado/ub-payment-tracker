@@ -9,9 +9,10 @@ import Students from "./pages/Students";
 import EmailLog from "./pages/EmailLog";
 import Login from "./pages/Login";
 import { NotificationToast } from "./components/UIComponents";
-import { useBills, addEmailLog } from "./hooks/useBills";
+import { useBills } from "./hooks/useBills";
 import { useStudents } from "./hooks/useStudents";
 import "./App.css";
+
 
 const PAGES = {
   dashboard: Dashboard,
@@ -27,16 +28,18 @@ export default function App() {
 
   const { students, addStudent, deleteStudent } = useStudents();
 
-  const {
-    bills,
+ const {
+  bills,
   emailLog,
   notifications,
   stats,
   markAsPaid,
   addBill,
+  deleteBill,
   addEmailLog,
+  deleteEmailLog,
   dismissNotification,
-  } = useBills(students);
+} = useBills(students);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -64,6 +67,8 @@ export default function App() {
   onNavigate: setPage,
   addStudent,
   deleteStudent,
+  onDeleteBill: deleteBill,
+  onDeleteEmailLog: deleteEmailLog,
   };
 
   return (

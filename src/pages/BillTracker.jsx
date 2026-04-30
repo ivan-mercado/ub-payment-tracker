@@ -81,7 +81,7 @@ const AddBillForm = ({ students, onAdd, onClose }) => {
   );
 };
 
-const BillRow = ({ bill, students, onMarkPaid, onSendEmail, emailStatus }) => {
+const BillRow = ({ bill, students, onMarkPaid, onSendEmail, onDeleteBill, emailStatus }) => {
   const student = students.find((s) => s.id === bill.studentId);
   const overdueDays =
     bill.status === "overdue" ? getDaysOverdue(bill.dueDate) : 0;
@@ -114,12 +114,18 @@ const BillRow = ({ bill, students, onMarkPaid, onSendEmail, emailStatus }) => {
     ? "Error"
     : "Send Email"}
 </button>
+<button
+  className="btn btn--sm btn--ghost"
+  onClick={() => onDeleteBill(bill.id)}
+>
+  Delete
+</button>
       </td>
     </tr>
   );
 };
 
-const BillTracker = ({ bills, students, onMarkPaid, onAddBill, addEmailLog }) => {
+const BillTracker = ({ bills, students, onMarkPaid, onAddBill, onDeleteBill }) => {
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -248,11 +254,12 @@ const BillTracker = ({ bills, students, onMarkPaid, onAddBill, addEmailLog }) =>
               filtered.map((bill) => (
                 <BillRow
                   key={bill.id}
-                  bill={bill}
-                  students={students}
-                  onMarkPaid={onMarkPaid}
-                  onSendEmail={handleSendEmail}
-                  emailStatus={emailStatus}
+  bill={bill}
+  students={students}
+  onMarkPaid={onMarkPaid}
+  onSendEmail={handleSendEmail}
+  onDeleteBill={onDeleteBill}
+  emailStatus={emailStatus}
                 />
               ))
             )}
