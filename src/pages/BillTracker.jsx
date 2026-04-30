@@ -119,7 +119,7 @@ const BillRow = ({ bill, students, onMarkPaid, onSendEmail, emailStatus }) => {
   );
 };
 
-const BillTracker = ({ bills, students, onMarkPaid, onAddBill }) => {
+const BillTracker = ({ bills, students, onMarkPaid, onAddBill, addEmailLog }) => {
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -127,40 +127,52 @@ const BillTracker = ({ bills, students, onMarkPaid, onAddBill }) => {
   const [emailStatus, setEmailStatus] = useState({});
 
   const handleSendEmail = async (bill) => {
-    const student = students.find((s) => s.id === bill.studentId);
+  const student = students.find((s) => s.id === bill.studentId);
 
-    if (!student) {
-      setEmailStatus((prev) => ({ ...prev, [bill.id]: "error" }));
-      return;
-    }
+  if (!student) {
+    setEmailStatus((prev) => ({ ...prev, [bill.id]: "error" }));
+    return;
+  }
 
-    try {
-      setSending(true);
+  try {
+    setSending(true);
 
-      const res = await fetch("http://localhost:5000/api/send-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: student.email,
-          name: student.name,
-          amount: bill.amount,
-          dueDate: bill.dueDate,
-          type: bill.type,
-        }),
+    const res = await fetch("http://localhost:5000/api/send-email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: student.email,
+        name: student.name,
+        amount: bill.amount,
+        dueDate: bill.dueDate,
+        type: bill.type,
+      }),
+    });
+
+    // ✅ UPDATE EMAIL STATUS (button text)
+    setEmailStatus((prev) => ({
+      ...prev,
+      [bill.id]: res.ok ? "sent" : "error",
+    }));
+
+    // ✅ ADD TO EMAIL LOG (THIS FIXES YOUR PAGE)
+    if (res.ok) {
+      addEmailLog({
+        to: student.email,
+        subject: `Billing Notice: ${bill.type}`,
+        body: `Email sent to ${student.name} for ₱${bill.amount}`,
+        type: bill.status === "paid" ? "paid" : "overdue",
       });
-
-      setEmailStatus((prev) => ({
-        ...prev,
-        [bill.id]: res.ok ? "sent" : "error",
-      }));
-    } catch {
-      setEmailStatus((prev) => ({ ...prev, [bill.id]: "error" }));
-    } finally {
-      setSending(false);
     }
-  };
+
+  } catch (err) {
+    setEmailStatus((prev) => ({ ...prev, [bill.id]: "error" }));
+  } finally {
+    setSending(false);
+  }
+};
 
   const filtered = bills.filter((bill) => {
     const student = students.find((s) => s.id === bill.studentId);

@@ -154,14 +154,23 @@ export const useBills = (students = []) => {
       .filter((b) => b.status !== "paid")
       .reduce((s, b) => s + b.amount, 0),
   };
-
+  const addEmailLog = (email) => {
+  setEmailLog((log) => [
+    {
+      ...email,
+      sentAt: new Date().toISOString(),
+    },
+    ...log,
+  ]);
+};
   return {
-    bills,
-    emailLog,
-    notifications,
-    stats,
-    markAsPaid,
-    addBill,
-    dismissNotification,
+     bills,
+  emailLog,
+  notifications,
+  stats,
+  markAsPaid,
+  addBill,
+  addEmailLog,
+  dismissNotification,
   };
 };

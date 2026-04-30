@@ -9,7 +9,7 @@ import Students from "./pages/Students";
 import EmailLog from "./pages/EmailLog";
 import Login from "./pages/Login";
 import { NotificationToast } from "./components/UIComponents";
-import { useBills } from "./hooks/useBills";
+import { useBills, addEmailLog } from "./hooks/useBills";
 import { useStudents } from "./hooks/useStudents";
 import "./App.css";
 
@@ -29,12 +29,13 @@ export default function App() {
 
   const {
     bills,
-    emailLog,
-    notifications,
-    stats,
-    markAsPaid,
-    addBill,
-    dismissNotification,
+  emailLog,
+  notifications,
+  stats,
+  markAsPaid,
+  addBill,
+  addEmailLog,
+  dismissNotification,
   } = useBills(students);
 
   useEffect(() => {
@@ -54,14 +55,15 @@ export default function App() {
 
   const pageProps = {
     students,
-    bills,
-    stats,
-    emailLog,
-    onMarkPaid: markAsPaid,
-    onAddBill: addBill,
-    onNavigate: setPage,
-    addStudent,
-    deleteStudent,
+  bills,
+  stats,
+  emailLog,
+  addEmailLog,
+  onMarkPaid: markAsPaid,
+  onAddBill: addBill,
+  onNavigate: setPage,
+  addStudent,
+  deleteStudent,
   };
 
   return (
