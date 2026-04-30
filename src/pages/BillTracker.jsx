@@ -125,7 +125,14 @@ const BillRow = ({ bill, students, onMarkPaid, onSendEmail, onDeleteBill, emailS
   );
 };
 
-const BillTracker = ({ bills, students, onMarkPaid, onAddBill, onDeleteBill }) => {
+const BillTracker = ({
+  bills,
+  students,
+  onMarkPaid,
+  onAddBill,
+  onDeleteBill,
+  addEmailLog,
+}) => {
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
