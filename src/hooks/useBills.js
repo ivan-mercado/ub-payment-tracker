@@ -8,7 +8,7 @@ import {
   addDoc,
 } from "firebase/firestore";
 import { db } from "../firebase";
-import { deleteDoc, doc } from "firebase/firestore";
+import { deleteDoc, doc, updateDoc } from "firebase/firestore";
 
 export const useBills = (students = []) => {
   const BILLS_KEY = "ub_bills";
@@ -96,56 +96,70 @@ useEffect(() => {
     return () => clearInterval(interval);
   }, [students, addNotification]);
 
+  
   const markAsPaid = useCallback(
   async (billId, paymentMethod = "GCash") => {
-      let updatedBill = null;
-      let student = null;
+    const billToUpdate = bills.find((bill) => bill.id === billId);
 
+    if (!billToUpdate) {
+      addNotification("Bill not found", "warning");
+      return;
+    }
+
+    const paidDate = new Date().toISOString().split("T")[0];
+
+    const updatedBill = {
+      ...billToUpdate,
+      status: "paid",
+      paidDate,
+      paymentMethod,
+    };
+
+    const student = students.find((s) => s.id === billToUpdate.studentId);
+
+    try {
+      // ✅ save to Firestore, so it stays paid after refresh
+      await updateDoc(doc(db, "bills", billId), {
+        status: "paid",
+        paidDate,
+        paymentMethod,
+      });
+
+      // ✅ update UI
       setBills((prev) =>
-        prev.map((bill) => {
-          if (bill.id !== billId) return bill;
-
-          updatedBill = {
-            ...bill,
-            status: "paid",
-            paidDate: new Date().toISOString().split("T")[0],
-            paymentMethod,
-          };
-
-          student = students.find((s) => s.id === bill.studentId);
-
-          return updatedBill;
-        })
+        prev.map((bill) => (bill.id === billId ? updatedBill : bill))
       );
 
-      if (student && updatedBill) {
+      // ✅ send receipt email
+      if (student) {
         await sendEmail("paid", student, updatedBill, paymentMethod);
 
         setEmailLog((log) => [
           {
             to: student.email,
-            subject: `Payment Confirmed – ${updatedBill.type}`,
+            subject: `Payment Receipt – ${updatedBill.type}`,
             body: `Payment receipt sent.
 
 Student: ${student.name}
 Bill: ${updatedBill.type}
 Amount Paid: ₱${updatedBill.amount}
 Payment Method: ${paymentMethod}
-Paid Date: ${updatedBill.paidDate}`,
+Paid Date: ${paidDate}`,
             sentAt: new Date().toISOString(),
             type: "paid",
           },
           ...log,
         ]);
 
-        addNotification(
-          `Payment confirmed for ${student.name}`,
-          "success"
-        );
+        addNotification(`Payment confirmed for ${student.name}`, "success");
       }
-    },
-    [students, addNotification]
-  );
+    } catch (err) {
+      console.error(err);
+      addNotification("Failed to mark bill as paid", "warning");
+    }
+  },
+  [bills, students, addNotification]
+);
 
   const addBill = useCallback(
   async (newBill) => {
