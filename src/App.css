@@ -397,12 +397,13 @@ table { border-collapse: collapse; width: 100%; }
 }
 
 .login-logo-img {
-  width: 72px;
-  height: 72px;
+  width: 84px;
+  height: 84px;
   margin: 0 auto 16px;
   display: block;
-  border-radius: 16px;
+  border-radius: 50%;
   object-fit: cover;
+  background: transparent;
   box-shadow: 0 8px 20px rgba(122, 17, 17, 0.3);
 }
 
