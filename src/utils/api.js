@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = "";
 
 // Generic request helper
 const request = async (endpoint, options = {}) => {
