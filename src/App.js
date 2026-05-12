@@ -73,12 +73,14 @@ export default function App() {
 
   return (
     <div className="app-layout">
-      <Sidebar activePage={page} onNavigate={setPage} />
+      <Sidebar
+  activePage={page}
+  onNavigate={setPage}
+  onLogout={() => signOut(auth)}
+/>
 
       <main className="main-content">
-        <button className="logout-btn" onClick={() => signOut(auth)}>
-          Logout
-        </button>
+        
 
         <PageComponent {...pageProps} />
       </main>

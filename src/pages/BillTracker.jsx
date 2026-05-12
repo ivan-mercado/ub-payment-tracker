@@ -86,6 +86,8 @@ const BillRow = ({ bill, students, onMarkPaid, onSendEmail, onDeleteBill, emailS
   const overdueDays =
     bill.status === "overdue" ? getDaysOverdue(bill.dueDate) : 0;
 
+
+    
   return (
     <tr>
       <td>{bill.id}</td>
@@ -97,33 +99,41 @@ const BillRow = ({ bill, students, onMarkPaid, onSendEmail, onDeleteBill, emailS
       <td><StatusBadge status={bill.status} /></td>
       <td>{overdueDays > 0 && `${overdueDays} days`}</td>
 
-      <td>
-        {bill.status !== "paid" && (
-          <button
-            className="btn btn--sm btn--primary"
-            onClick={() => onMarkPaid(bill.id)}
-          >
-            Mark Paid
-          </button>
-        )}
+      <td className="actions-cell">
+  <div className="bill-actions">
+    {bill.status !== "paid" && (
+      <button
+        className="btn btn--sm btn--primary action-btn"
+        onClick={() => onMarkPaid(bill)}
+      >
+        Mark Paid
+      </button>
+    )}
 
-        <button onClick={() => onSendEmail(bill)} className="send-email-btn">
-  {emailStatus[bill.id] === "sent"
-    ? "Sent"
-    : emailStatus[bill.id] === "error"
-    ? "Error"
-    : "Send Email"}
-</button>
-<button
-  className="btn btn--sm btn--ghost"
-  onClick={() => onDeleteBill(bill.id)}
->
-  Delete
-</button>
-      </td>
+    <button
+      onClick={() => onSendEmail(bill)}
+      className="send-email-btn action-btn"
+    >
+      {emailStatus[bill.id] === "sent"
+        ? "Sent"
+        : emailStatus[bill.id] === "error"
+        ? "Error"
+        : "Send Email"}
+    </button>
+
+    <button
+      className="btn btn--sm btn--ghost action-btn"
+      onClick={() => onDeleteBill(bill.id)}
+    >
+      Delete
+    </button>
+  </div>
+</td>
     </tr>
   );
 };
+
+
 
 const BillTracker = ({
   bills,
@@ -138,6 +148,18 @@ const BillTracker = ({
   const [showModal, setShowModal] = useState(false);
   const [sending, setSending] = useState(false);
   const [emailStatus, setEmailStatus] = useState({});
+
+  const [paymentModalBill, setPaymentModalBill] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState("GCash");
+
+  const handleConfirmPayment = async () => {
+    if (!paymentModalBill) return;
+
+    await onMarkPaid(paymentModalBill.id, paymentMethod);
+
+    setPaymentModalBill(null);
+    setPaymentMethod("GCash");
+  };
 
   const handleSendEmail = async (bill) => {
   const student = students.find((s) => s.id === bill.studentId);
@@ -263,7 +285,7 @@ const BillTracker = ({
                   key={bill.id}
   bill={bill}
   students={students}
-  onMarkPaid={onMarkPaid}
+  onMarkPaid={setPaymentModalBill}
   onSendEmail={handleSendEmail}
   onDeleteBill={onDeleteBill}
   emailStatus={emailStatus}
@@ -285,6 +307,59 @@ const BillTracker = ({
           onClose={() => setShowModal(false)}
         />
       </Modal>
+
+      <Modal
+  open={!!paymentModalBill}
+  onClose={() => setPaymentModalBill(null)}
+  title="Confirm Payment"
+>
+  {paymentModalBill && (
+    <div className="payment-confirm-box">
+      <p className="payment-confirm-text">
+        Select the payment method used for this bill.
+      </p>
+
+      <div className="payment-summary">
+        <p>
+          <strong>Bill:</strong> {paymentModalBill.type}
+        </p>
+        <p>
+          <strong>Amount:</strong> {formatCurrency(paymentModalBill.amount)}
+        </p>
+        <p>
+          <strong>Due Date:</strong> {formatDate(paymentModalBill.dueDate)}
+        </p>
+      </div>
+
+      <div className="payment-methods">
+        {["GCash", "Cash", "Card"].map((method) => (
+          <button
+            key={method}
+            className={`payment-method-btn ${
+              paymentMethod === method ? "payment-method-btn--active" : ""
+            }`}
+            onClick={() => setPaymentMethod(method)}
+          >
+            {method}
+          </button>
+        ))}
+      </div>
+
+      <div className="form-actions">
+        <button
+          className="btn btn--ghost"
+          onClick={() => setPaymentModalBill(null)}
+        >
+          Cancel
+        </button>
+
+        <button className="btn btn--primary" onClick={handleConfirmPayment}>
+          Continue
+        </button>
+      </div>
+    </div>
+  )}
+</Modal>
     </div>
   );
 };

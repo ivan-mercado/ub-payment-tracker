@@ -35,26 +35,34 @@ const request = async (endpoint, options = {}) => {
 };
 
 // ✅ Send email (USED IN YOUR APP)
-export const sendEmail = async (type, student, bill) => {
-  if (!type || !student || !bill) {
-    throw new Error("Missing required email data");
+export const sendEmail = async (type, student, bill, paymentMethod = "") => {
+  const response = await fetch(`${BASE_URL}/api/send-email`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: student.email,
+      name: student.name,
+      amount: bill.amount,
+      dueDate: bill.dueDate,
+
+      // this is the bill type: Tuition Fee, Misc Fee, etc.
+      type: bill.type,
+
+      // this is the email purpose: paid or overdue
+      emailType: type,
+
+      paymentMethod,
+      paidDate: bill.paidDate,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to send email");
   }
 
-  try {
-    console.log("📤 Sending email:", { type, student, bill });
-
-    const data = await request("/send-email", {
-      method: "POST",
-      body: JSON.stringify({ type, student, bill }),
-    });
-
-    console.log("✅ Email sent successfully:", data);
-
-    return data;
-  } catch (err) {
-    console.error("❌ Failed to send email:", err.message);
-    throw err;
-  }
+  return response.json();
 };
 
 // (Optional) Health check for backend

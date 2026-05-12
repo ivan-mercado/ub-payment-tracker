@@ -97,7 +97,7 @@ useEffect(() => {
   }, [students, addNotification]);
 
   const markAsPaid = useCallback(
-    async (billId) => {
+  async (billId, paymentMethod = "GCash") => {
       let updatedBill = null;
       let student = null;
 
@@ -109,6 +109,7 @@ useEffect(() => {
             ...bill,
             status: "paid",
             paidDate: new Date().toISOString().split("T")[0],
+            paymentMethod,
           };
 
           student = students.find((s) => s.id === bill.studentId);
@@ -118,13 +119,19 @@ useEffect(() => {
       );
 
       if (student && updatedBill) {
-        await sendEmail("paid", student, updatedBill);
+        await sendEmail("paid", student, updatedBill, paymentMethod);
 
         setEmailLog((log) => [
           {
             to: student.email,
             subject: `Payment Confirmed – ${updatedBill.type}`,
-            body: "Sent via Resend API",
+            body: `Payment receipt sent.
+
+Student: ${student.name}
+Bill: ${updatedBill.type}
+Amount Paid: ₱${updatedBill.amount}
+Payment Method: ${paymentMethod}
+Paid Date: ${updatedBill.paidDate}`,
             sentAt: new Date().toISOString(),
             type: "paid",
           },
