@@ -62,8 +62,9 @@ export const sendEmail = async (type, student, bill, paymentMethod = "") => {
   });
 
   if (!response.ok) {
-    throw new Error("Failed to send email");
-  }
+  const data = await response.json().catch(() => ({}));
+  throw new Error(data.details || data.error || "Failed to send email");
+}
 
   return response.json();
 };
