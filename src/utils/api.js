@@ -1,4 +1,7 @@
-const BASE_URL = "";
+const BASE_URL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:5000"
+    : "";
 
 // Generic request helper
 const request = async (endpoint, options = {}) => {
