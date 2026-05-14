@@ -6,6 +6,7 @@ import {
   EmptyState,
 } from "../components/UIComponents";
 import { formatCurrency, formatDate, getDaysOverdue } from "../utils/helpers";
+import { sendEmail } from "../utils/api";
 
 const FILTERS = ["all", "pending", "paid", "overdue"];
 
@@ -172,35 +173,19 @@ const BillTracker = ({
   try {
     setSending(true);
 
-    const res = await fetch("http://localhost:5000/api/send-email", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: student.email,
-        name: student.name,
-        amount: bill.amount,
-        dueDate: bill.dueDate,
-        type: bill.type,
-      }),
-    });
+    await sendEmail("overdue", student, bill);
 
-    // ✅ UPDATE EMAIL STATUS (button text)
-    setEmailStatus((prev) => ({
-      ...prev,
-      [bill.id]: res.ok ? "sent" : "error",
-    }));
+setEmailStatus((prev) => ({
+  ...prev,
+  [bill.id]: "sent",
+}));
 
-    // ✅ ADD TO EMAIL LOG (THIS FIXES YOUR PAGE)
-    if (res.ok) {
-      addEmailLog({
-        to: student.email,
-        subject: `Billing Notice: ${bill.type}`,
-        body: `Email sent to ${student.name} for ₱${bill.amount}`,
-        type: bill.status === "paid" ? "paid" : "overdue",
-      });
-    }
+addEmailLog({
+  to: student.email,
+  subject: `Billing Notice: ${bill.type}`,
+  body: `Email sent to ${student.name} for ₱${bill.amount}`,
+  type: bill.status === "paid" ? "paid" : "overdue",
+});
 
   } catch (err) {
     setEmailStatus((prev) => ({ ...prev, [bill.id]: "error" }));
