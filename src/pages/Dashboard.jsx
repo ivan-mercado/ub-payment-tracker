@@ -1,6 +1,5 @@
 import React from "react";
 import { StatCard, StatusBadge, Avatar } from "../components/UIComponents";
-//import { STUDENTS } from "../data/mockData";
 import { useStudents } from "../hooks/useStudents";
 import { formatCurrency, formatDate } from "../utils/helpers";
 

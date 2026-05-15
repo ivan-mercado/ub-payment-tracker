@@ -118,19 +118,16 @@ useEffect(() => {
     const student = students.find((s) => s.id === billToUpdate.studentId);
 
     try {
-      // ✅ save to Firestore, so it stays paid after refresh
       await updateDoc(doc(db, "bills", billId), {
         status: "paid",
         paidDate,
         paymentMethod,
       });
 
-      // ✅ update UI
       setBills((prev) =>
         prev.map((bill) => (bill.id === billId ? updatedBill : bill))
       );
 
-      // ✅ send receipt email
       if (student) {
         await sendEmail("paid", student, updatedBill, paymentMethod);
 
@@ -140,11 +137,11 @@ useEffect(() => {
             subject: `Payment Receipt – ${updatedBill.type}`,
             body: `Payment receipt sent.
 
-Student: ${student.name}
-Bill: ${updatedBill.type}
-Amount Paid: ₱${updatedBill.amount}
-Payment Method: ${paymentMethod}
-Paid Date: ${paidDate}`,
+            Student: ${student.name}
+            Bill: ${updatedBill.type}
+            Amount Paid: ₱${updatedBill.amount}
+            Payment Method: ${paymentMethod}
+            Paid Date: ${paidDate}`,
             sentAt: new Date().toISOString(),
             type: "paid",
           },
@@ -211,10 +208,9 @@ Paid Date: ${paidDate}`,
 };
 const deleteBill = async (billId) => {
   try {
-    // 🔥 delete from Firestore
+
     await deleteDoc(doc(db, "bills", billId));
 
-    // update UI
     setBills((prev) => prev.filter((bill) => bill.id !== billId));
 
     addNotification("Bill deleted", "warning");

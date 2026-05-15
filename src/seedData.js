@@ -5,7 +5,6 @@ export const seedDatabase = async () => {
   try {
     console.log("Seeding database...");
 
-    // 🔹 1. Create students
     const studentsData = [
       { name: "Juan Dela Cruz", course: "BS Computer Engineering", year: "3", email: "juan@gmail.com" },
       { name: "Maria Santos", course: "BS IT", year: "2", email: "maria@gmail.com" },
@@ -31,7 +30,6 @@ export const seedDatabase = async () => {
 
     console.log("Students created");
 
-    // 🔹 2. Create bills (linked to students)
     const billsData = [
       {
         studentId: studentRefs[0],

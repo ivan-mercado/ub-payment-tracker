@@ -268,12 +268,12 @@ addEmailLog({
               filtered.map((bill) => (
                 <BillRow
                   key={bill.id}
-  bill={bill}
-  students={students}
-  onMarkPaid={setPaymentModalBill}
-  onSendEmail={handleSendEmail}
-  onDeleteBill={onDeleteBill}
-  emailStatus={emailStatus}
+                  bill={bill}
+                  students={students}
+                  onMarkPaid={setPaymentModalBill}
+                  onSendEmail={handleSendEmail}
+                  onDeleteBill={onDeleteBill}
+                  emailStatus={emailStatus}
                 />
               ))
             )}

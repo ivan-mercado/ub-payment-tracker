@@ -3,10 +3,10 @@ const BASE_URL =
     ? "http://localhost:5000"
     : "";
 
-// Generic request helper
+
 const request = async (endpoint, options = {}) => {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+  const timeout = setTimeout(() => controller.abort(), 10000); 
 
   try {
     const res = await fetch(`${BASE_URL}${endpoint}`, {
@@ -37,7 +37,6 @@ const request = async (endpoint, options = {}) => {
   }
 };
 
-// ✅ Send email (USED IN YOUR APP)
 export const sendEmail = async (type, student, bill, paymentMethod = "") => {
   const response = await fetch(`${BASE_URL}/api/send-email`, {
     method: "POST",
@@ -50,10 +49,10 @@ export const sendEmail = async (type, student, bill, paymentMethod = "") => {
       amount: bill.amount,
       dueDate: bill.dueDate,
 
-      // this is the bill type: Tuition Fee, Misc Fee, etc.
+
       type: bill.type,
 
-      // this is the email purpose: paid or overdue
+
       emailType: type,
 
       paymentMethod,
@@ -69,7 +68,6 @@ export const sendEmail = async (type, student, bill, paymentMethod = "") => {
   return response.json();
 };
 
-// (Optional) Health check for backend
 export const checkServer = async () => {
   try {
     const res = await fetch(BASE_URL);
